@@ -9,17 +9,21 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.w3c.dom.Text;
+
 public class MainActivity extends AppCompatActivity {
     TabHost tabHost;
     Button button;
     TextView textView;
     Spinner spnDe, spnA;
+    Spinner spinner;
     conversores miConversor = new conversores();
 
     @Override
@@ -27,67 +31,84 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        tabHost = findViewById(R.id.tbhConversores);
+        tabHost = findViewById(R.id.tbhParcial);
         tabHost.setup();
 
-        tabHost.addTab(tabHost.newTabSpec("Longitud").setContent(R.id.tbhLongitud).setIndicator("", getDrawable(R.drawable.longitud)));
-        tabHost.addTab(tabHost.newTabSpec("Almacenamiento").setContent(R.id.tbhAlmcenamiento).setIndicator("", getDrawable(R.drawable.almacenamiento)));
-        tabHost.addTab(tabHost.newTabSpec("Monedas").setContent(R.id.tbhMonedas).setIndicator("", getDrawable(R.drawable.payment_icon)));
-        tabHost.addTab(tabHost.newTabSpec("Masa").setContent(R.id.tbhMasa).setIndicator("", getDrawable(R.drawable.volume_icon)));
+        // Primera pestaña
+        TabHost.TabSpec spec = tabHost.newTabSpec("Tab1");
+        spec.setIndicator("Tab 1");
+        spec.setContent(R.id.tbhArea);
+        tabHost.addTab(spec);
 
         button = findViewById(R.id.btnConvertir);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                try {
-                    int de = 0, a = 0;
-                    textView = (TextView) findViewById(R.id.txtcantidad);
-                    double cantidad = Double.parseDouble(textView.getText().toString());
-                    int opcion = 0;
-                    switch (tabHost.getCurrentTab()) {
-                        case 0:
-                            spnDe = findViewById(R.id.spnDeLongitud);
-                            spnA = findViewById(R.id.spnALongitud);
-                            opcion = 1;
-                            break;
-                        case 1:
-                            spnDe = findViewById(R.id.spnDeAlmacenamiento);
-                            spnA = findViewById(R.id.spnAlmacenamiento);
-                            opcion = 3;
-                            break;
-                        case 2:
-                            spnDe = findViewById(R.id.spnDeMonedas);
-                            spnA = findViewById(R.id.spnAMonedas);
-                            opcion = 0;
-                            break;
-                        case 3:
-                            spnDe = findViewById(R.id.spnDeMasa);
-                            spnA = findViewById(R.id.spnAMasa);
-                            opcion = 2;
-                            break;
-                    }
-                    de = spnDe.getSelectedItemPosition();
-                    a = spnA.getSelectedItemPosition();
-                    textView = findViewById(R.id.lblrespuesta);
-                    textView.setText("Respuesta: " + miConversor.convertir(opcion, de, a, cantidad));
-                }catch (NumberFormatException e){
-                    textView = findViewById(R.id.lblrespuesta);
-                    textView.setText("Por favor ingrese una cantidad a convertir");
-                }catch (Exception e){
-                    textView = findViewById(R.id.lblrespuesta);
-                    textView.setText("ERROR: "+ e.getMessage().toString());
-                }
+                textView = (TextView) findViewById(R.id.txtcantidad);
+                double cantidad = Double.parseDouble(textView.getText().toString());
+
+                spinner = findViewById(R.id.spnDeArea);
+                int de = spinner.getSelectedItemPosition();
+
+                spinner = findViewById(R.id.spnAArea);
+                int a = spinner.getSelectedItemPosition();
+
+                textView = findViewById(R.id.lblrespuesta);
+                textView.setText("Respuesta: "+ miConversor.convertir(0, de, a, cantidad));
             }
         });
+
+        // Segunda pestaña
+        spec = tabHost.newTabSpec("Tab2");
+        spec.setIndicator("Tab 2");
+        spec.setContent(R.id.tbhCajero);
+        tabHost.addTab(spec);
+
+        EditText editTextCantidad = findViewById(R.id.edit_text_cantidad);
+        Button buttonCalcular = findViewById(R.id.button_calcular);
+        TextView textViewBilletes50 = findViewById(R.id.text_view_billetes_50);
+        TextView textViewBilletes20 = findViewById(R.id.text_view_billetes_20);
+        TextView textViewBilletes10 = findViewById(R.id.text_view_billetes_10);
+        TextView textViewBilletes5 = findViewById(R.id.text_view_billetes_5);
+        TextView textViewBilletes1 = findViewById(R.id.text_view_billetes_1);
+        TextView textViewMonedas5 = findViewById(R.id.text_view_monedas_5);
+
+        // Manejo de eventos del botón de cálculo
+        buttonCalcular.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Obtener la cantidad a retirar
+                int cantidad = Integer.parseInt(editTextCantidad.getText().toString());
+
+                // Calcular la cantidad de billetes y monedas de cada denominación
+                int billetes50 = cantidad / 50;
+                cantidad %= 50;
+                int billetes20 = cantidad / 20;
+                cantidad %= 20;
+                int billetes10 = cantidad / 10;
+                cantidad %= 10;
+                int billetes5 = cantidad / 5;
+                cantidad %= 10;
+                int billetes1 = cantidad / 5;
+                cantidad %= 5;
+                int monedas5 = cantidad;
+
+                // Mostrar los resultados
+                textViewBilletes50.setText("Billetes de 50: " + billetes50);
+                textViewBilletes20.setText("Billetes de 20: " + billetes20);
+                textViewBilletes10.setText("Billetes de 10: " + billetes10);
+                textViewBilletes5.setText("Monedas de 5: " + billetes5);
+                textViewBilletes1.setText("Monedas de 1: " + billetes1);
+                textViewMonedas5.setText("Monedas de 5: " + monedas5);
+            }
+        });
+
     }
 }
 
 class conversores{
     double[][] valores = {
-            {1, 7.84, 24.63, 36.51, 581.78, 8.75, 0.93, 130.54, 82.52, 0.82},//monedas
-            {1, 100, 3.28084, 39.37008, 1.1963081929167, 1.093613, 0.001, 0.000621},//Longitud
-            {1, 453592.000004704, 453.592, 16, 0.453592, 0.000453592},//Masa
-            {1, 8388608, 1048576,1024, 0.0009765625, 0.00000095367431640625},//Almacenamiento
+            {1, 0.6988, 0.001, 0.0001, 0.0000698, 0.0001726},// Areas
     };
 
     public double convertir(int opcion, int de, int a, double cantidad){
